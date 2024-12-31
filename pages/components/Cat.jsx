@@ -1,80 +1,51 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
+import { Canvas, useLoader, useFrame, useThree } from '@react-three/fiber';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+function Controls() {
+    const { camera, gl } = useThree();
+    const controlsRef = useRef();
+    useFrame(() => {
+        if (controlsRef.current) {
+            controlsRef.current.update();
+        }
+    });
+    React.useEffect(() => {
+        controlsRef.current = new OrbitControls(camera, gl.domElement);
+        controlsRef.current.enableZoom = false; // 모델 렌더링 내 마우스 휠 줌 기능 비활성화
+        controlsRef.current.enableRotate = true; // 우클릭으로 모델의 위치 조정 기능 활성화
+        controlsRef.current.enablePan = false; // 모델의 위치 조정 기능 비활성화
+        controlsRef.current.minPolarAngle = Math.PI / 2;
+        controlsRef.current.maxPolarAngle = Math.PI / 2;
+        controlsRef.current.target.set(0, 0.1, 0); // 모델 렌더링 중심점 조정
+    }, [camera, gl]);
+    return null;
+}
+
+function Model() { // 모델 파일 로드
+    const gltf = useLoader(GLTFLoader, '/models/cat.glb');
+    return (
+        <primitive
+            object={gltf.scene}
+        />
+    );
+}
 
 const Cat = () => {
-    const containerRef = useRef(null);
-    let camera, scene, renderer, controls, clock, mixer;
-
-    useEffect(() => {
-        clock = new THREE.Clock();
-
-        const container = containerRef.current;
-
-        camera = new THREE.PerspectiveCamera(45, 600 / 600, 0.25, 20);
-        camera.position.set(0, 0.4, 0.7);
-
-        scene = new THREE.Scene();
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(0, 1, 0).normalize();
-        scene.add(directionalLight);
-
-        const loader = new GLTFLoader().setPath('/models/');
-        loader.load('cat.glb', function (gltf) {
-            const model = gltf.scene;
-
-            scene.add(model);
-
-            render();
-        });
-
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setAnimationLoop(render);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(600, 600);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1;
-        renderer.setClearColor(0x000000, 0); // 배경을 투명하게 설정
-        container.appendChild(renderer.domElement);
-
-        controls = new OrbitControls(camera, renderer.domElement);
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = -0.75;
-        controls.enableDamping = true;
-        controls.minDistance = 0.5;
-        controls.maxDistance = 1;
-        controls.target.set(0, 0.1, 0);
-        controls.update();
-
-        window.addEventListener('resize', onWindowResize);
-
-        return () => {
-            window.removeEventListener('resize', onWindowResize);
-            container.removeChild(renderer.domElement);
-        };
-    }, []);
-
-    const onWindowResize = () => {
-        camera.aspect = 600 / 600;
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(600, 600);
-    };
-
-    const render = () => {
-        if (mixer) mixer.update(clock.getDelta());
-
-        controls.update();
-
-        renderer.render(scene, camera);
-    };
-
-    return <div ref={containerRef} />;
+    return (
+        <Canvas
+            style={{ width: 300, height: 300 }} // 캔버스 크기 조정
+            camera={{ position: [0, 1, 2], fov: 45, near: 0.25, far: 20 }} // 카메라 위치 조정 (포지션 : scale 조정, fov : 시야각, near : 가까운 물체, far : 먼 물체)
+        >
+            <ambientLight intensity={2} />
+            <directionalLight intensity={3} position={[0, 1, 0]} /> // 조명 위치 조정
+            <hemisphereLight intensity={1} />
+            <Controls />
+            <Model />
+        </Canvas>
+    );
 };
 
 export default Cat;

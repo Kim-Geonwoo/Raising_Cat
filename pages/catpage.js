@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Main from './components/Main';
 import Cat from './components/Cat';
 import UI from './components/UI';
 
 function CatPage() {
+    
     return (
-        <div>
-            <div class="w-auto h-auto">
+        <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gradient-to-br from-blue-500 to-green-500" style={{ outline: '2px solid black', outlineOffset: '-10px' }}>
+            <div className="w-auto h-auto relative">
                 <Cat />
             </div>
             <UI />
