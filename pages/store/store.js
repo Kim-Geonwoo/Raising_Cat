@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { useEffect } from 'react';
+import React from 'react';
 
 // 초기 상태 설정
 const initialState = {
@@ -73,4 +74,11 @@ function useDecreaseHungerAndHappiness() {
   }, [decreaseHungerAndHappiness]);
 }
 
+const Store = () => {
+  return (
+    <div />
+  );
+};
+
 export { useStore, useDecreaseHungerAndHappiness };
+export default Store;
